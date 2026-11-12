@@ -1,0 +1,1361 @@
+{
+  "$comment": "Phase 0 prefilter signatures. A match is a triage signal that prioritizes coverage units and seeds hunter context. It is never a finding. Patterns are JavaScript regular expressions applied to one line at a time; keep them linear (no nested quantifiers) so hostile input cannot cause catastrophic backtracking.",
+  "version": 1,
+  "language_groups": {
+    "js": [
+      ".js",
+      ".jsx",
+      ".mjs",
+      ".cjs",
+      ".ts",
+      ".tsx",
+      ".mts",
+      ".cts",
+      ".vue",
+      ".svelte"
+    ],
+    "py": [
+      ".py",
+      ".pyw"
+    ],
+    "go": [
+      ".go"
+    ],
+    "jvm": [
+      ".java",
+      ".kt",
+      ".kts",
+      ".scala",
+      ".groovy"
+    ],
+    "rb": [
+      ".rb",
+      ".erb",
+      ".rake"
+    ],
+    "php": [
+      ".php",
+      ".phtml"
+    ],
+    "cs": [
+      ".cs",
+      ".cshtml"
+    ],
+    "native": [
+      ".c",
+      ".h",
+      ".cc",
+      ".cpp",
+      ".cxx",
+      ".hpp",
+      ".hh",
+      ".hxx",
+      ".m",
+      ".mm"
+    ],
+    "rs": [
+      ".rs"
+    ],
+    "sol": [
+      ".sol"
+    ],
+    "move": [
+      ".move"
+    ],
+    "sh": [
+      ".sh",
+      ".bash",
+      ".zsh"
+    ],
+    "yaml": [
+      ".yml",
+      ".yaml"
+    ],
+    "tf": [
+      ".tf",
+      ".tfvars",
+      ".hcl"
+    ],
+    "docker": [
+      "Dockerfile",
+      "Containerfile",
+      ".dockerfile"
+    ],
+    "web": [
+      ".html",
+      ".htm",
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx",
+      ".vue",
+      ".svelte"
+    ],
+    "config": [
+      ".json",
+      ".yml",
+      ".yaml",
+      ".toml",
+      ".ini",
+      ".env",
+      ".properties",
+      ".conf",
+      ".cfg",
+      ".xml"
+    ],
+    "any": [
+      "*"
+    ]
+  },
+  "rules": [
+    {
+      "id": "secret.private-key",
+      "title": "Private key material",
+      "languages": [
+        "any"
+      ],
+      "pattern": "-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-798"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "secret.aws-access-key",
+      "title": "AWS access key ID",
+      "languages": [
+        "any"
+      ],
+      "pattern": "\\b(?:AKIA|ASIA)[0-9A-Z]{16}\\b",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-798"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "secret.github-token",
+      "title": "GitHub token",
+      "languages": [
+        "any"
+      ],
+      "pattern": "\\b(?:gh[pousr]_[A-Za-z0-9]{36,255}|github_pat_[A-Za-z0-9_]{60,255})\\b",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-798"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "secret.slack-token",
+      "title": "Slack token",
+      "languages": [
+        "any"
+      ],
+      "pattern": "\\bxox[abposr]-[A-Za-z0-9-]{10,200}\\b",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-798"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "secret.stripe-live-key",
+      "title": "Stripe live secret key",
+      "languages": [
+        "any"
+      ],
+      "pattern": "\\b[sr]k_live_[A-Za-z0-9]{20,200}\\b",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-798"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "secret.llm-api-key",
+      "title": "LLM provider API key",
+      "languages": [
+        "any"
+      ],
+      "pattern": "\\b(?:sk-ant-[A-Za-z0-9_-]{20,300}|sk-proj-[A-Za-z0-9_-]{20,300}|AIza[0-9A-Za-z_-]{35})\\b",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-798"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "secret.generic-assignment",
+      "title": "Credential-like literal assignment",
+      "languages": [
+        "any"
+      ],
+      "pattern": "(?:password|passwd|secret|api_?key|access_?token|auth_?token|client_?secret)[\"']?\\s{0,4}[:=]\\s{0,4}[\"'][^\"'\\s$<{]{8,200}[\"']",
+      "flags": "i",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-798"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "marker.security-todo",
+      "title": "Security-related TODO/FIXME",
+      "languages": [
+        "any"
+      ],
+      "pattern": "\\b(?:TODO|FIXME|HACK|XXX)\\b[^\\n]{0,80}\\b(?:auth|permission|csrf|xss|sanitiz|validat|escape|secur|inject|tenant|owner)",
+      "flags": "i",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [],
+      "severity_hint": "low"
+    },
+    {
+      "id": "marker.disabled-check",
+      "title": "Disabled or bypassed security check",
+      "languages": [
+        "any"
+      ],
+      "pattern": "\\b(?:skip|bypass|disable|no)_?(?:auth|authz|csrf|verify|verification|ssl|tls|signature)\\b",
+      "flags": "i",
+      "class": "ATTACK-CLASSES.md#Access control",
+      "cwe": [
+        "CWE-285"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "js.eval",
+      "title": "Dynamic code evaluation",
+      "languages": [
+        "js"
+      ],
+      "pattern": "(?:^|[^.\\w])(?:eval|Function)\\s{0,4}\\(|new\\s+Function\\s{0,4}\\(|vm\\.(?:runIn\\w+Context|Script|compileFunction)\\b",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-95"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "js.child-process",
+      "title": "Shell or process execution",
+      "languages": [
+        "js"
+      ],
+      "pattern": "\\b(?:exec|execSync|spawn|spawnSync|execFile|execFileSync|fork)\\s{0,4}\\(|\\bshell\\s{0,4}:\\s{0,4}true\\b",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "js.sql-concat",
+      "title": "SQL built from string concatenation or interpolation",
+      "languages": [
+        "js"
+      ],
+      "pattern": "(?:\\.query|\\.execute|\\.raw|\\$queryRawUnsafe|\\$executeRawUnsafe|knex\\.raw|sequelize\\.query)\\s{0,4}\\(\\s{0,4}(?:`[^`]{0,400}\\$\\{|[\"'][^\"']{0,400}[\"']\\s{0,4}\\+)",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-89"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "js.nosql-operator",
+      "title": "Query object taken directly from request",
+      "languages": [
+        "js"
+      ],
+      "pattern": "\\.(?:find|findOne|updateOne|updateMany|deleteMany|aggregate)\\s{0,4}\\(\\s{0,4}req\\.(?:body|query|params)\\b",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-943"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "js.dom-sink",
+      "title": "Raw HTML DOM sink",
+      "languages": [
+        "web"
+      ],
+      "pattern": "\\.(?:innerHTML|outerHTML)\\s{0,4}=|insertAdjacentHTML\\s{0,4}\\(|document\\.write(?:ln)?\\s{0,4}\\(|dangerouslySetInnerHTML|v-html\\s{0,4}=|\\{@html\\s",
+      "class": "CLIENT-SIDE.md#DOM-based XSS",
+      "cwe": [
+        "CWE-79"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "js.postmessage-listener",
+      "title": "postMessage listener (check origin validation)",
+      "languages": [
+        "web"
+      ],
+      "pattern": "addEventListener\\s{0,4}\\(\\s{0,4}[\"']message[\"']|\\bonmessage\\s{0,4}=",
+      "class": "CLIENT-SIDE.md#`postMessage` origin and source trust",
+      "cwe": [
+        "CWE-346"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "js.prototype-merge",
+      "title": "Recursive merge or path set (prototype pollution)",
+      "languages": [
+        "js"
+      ],
+      "pattern": "\\b(?:merge|deepMerge|defaultsDeep|mergeWith|setWith|set)\\s{0,4}\\([^)]{0,200}req\\.(?:body|query)|\\[\\s{0,4}(?:key|k|prop|name)\\s{0,4}\\]\\s{0,4}=\\s{0,4}[^=]",
+      "class": "CLIENT-SIDE.md#Prototype pollution and gadget chain",
+      "cwe": [
+        "CWE-1321"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "js.path-join-request",
+      "title": "Filesystem path built from request input",
+      "languages": [
+        "js"
+      ],
+      "pattern": "(?:path\\.(?:join|resolve)|fs\\.\\w+|sendFile|createReadStream|readFile)\\s{0,4}\\([^)]{0,200}req\\.(?:params|query|body|path|url)\\b",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-22"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "js.ssrf-fetch",
+      "title": "Outbound request to request-controlled URL",
+      "languages": [
+        "js"
+      ],
+      "pattern": "(?:fetch|axios(?:\\.\\w+)?|got|request|http\\.get|https\\.get|undici\\.request)\\s{0,4}\\([^)]{0,120}(?:req\\.(?:body|query|params)|url|uri|href|target|callback|webhook)",
+      "flags": "i",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-918"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "js.open-redirect",
+      "title": "Redirect to request-controlled location",
+      "languages": [
+        "js"
+      ],
+      "pattern": "\\.redirect\\s{0,4}\\([^)]{0,80}req\\.(?:query|body|params)|location(?:\\.href)?\\s{0,4}=\\s{0,4}[^;]{0,80}(?:searchParams|query|params|next|returnTo|redirect)",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-601"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "js.jwt-weak-verify",
+      "title": "JWT decoded without verification or with permissive algorithms",
+      "languages": [
+        "js"
+      ],
+      "pattern": "jwt\\.decode\\s{0,4}\\(|algorithms\\s{0,4}:\\s{0,4}\\[[^\\]]{0,40}[\"']none[\"']|ignoreExpiration\\s{0,4}:\\s{0,4}true",
+      "class": "WEB-PROTOCOL-AND-AUTH.md#JWT verification and claim binding",
+      "cwe": [
+        "CWE-347"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "js.cors-reflect",
+      "title": "Permissive or reflected CORS with credentials",
+      "languages": [
+        "js"
+      ],
+      "pattern": "origin\\s{0,4}:\\s{0,4}(?:true|[\"']\\*[\"'])|Access-Control-Allow-Origin[\"']?\\s{0,4}[,:]\\s{0,4}(?:req\\.headers|origin|[\"']\\*)",
+      "flags": "i",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-942"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "js.insecure-random",
+      "title": "Math.random for a security-sensitive value",
+      "languages": [
+        "js"
+      ],
+      "pattern": "(?:token|secret|nonce|salt|password|otp|session|key)\\w{0,20}\\s{0,4}=\\s{0,4}[^;]{0,80}Math\\.random\\s{0,4}\\(",
+      "flags": "i",
+      "class": "ATTACK-CLASSES.md#Cryptography and secrets",
+      "cwe": [
+        "CWE-338"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "js.tls-disabled",
+      "title": "TLS verification disabled",
+      "languages": [
+        "js"
+      ],
+      "pattern": "rejectUnauthorized\\s{0,4}:\\s{0,4}false|NODE_TLS_REJECT_UNAUTHORIZED[\"']?\\s{0,4}[=:]\\s{0,4}[\"']?0",
+      "class": "CRYPTOGRAPHY.md#Transport and certificate validation",
+      "cwe": [
+        "CWE-295"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "js.unsafe-deserialize",
+      "title": "Unsafe deserialization",
+      "languages": [
+        "js"
+      ],
+      "pattern": "\\b(?:node-serialize|serialize-javascript|funcster)\\b|\\bunserialize\\s{0,4}\\(|yaml\\.load\\s{0,4}\\([^)]{0,80}(?:unsafe|JSON_SCHEMA\\s{0,4}:\\s{0,4}false)",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-502"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "js.llm-tool-exec",
+      "title": "Model output reaches a tool, shell, or code sink",
+      "languages": [
+        "js",
+        "py"
+      ],
+      "pattern": "(?:tool_calls?|function_call|toolUse|tool_use)[^\\n]{0,120}(?:exec|eval|spawn|subprocess|os\\.system|child_process|fetch|query)",
+      "class": "AI-AND-LLM.md#Tool-argument injection into a downstream sink",
+      "cwe": [
+        "CWE-77"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "llm.prompt-assembly",
+      "title": "Untrusted content concatenated into a prompt",
+      "languages": [
+        "js",
+        "py"
+      ],
+      "pattern": "(?:system_?prompt|systemPrompt|messages|prompt)\\s{0,4}(?:\\+?=|:)\\s{0,4}[^\\n]{0,80}(?:req\\.|request\\.|user_input|document|html|email|page_content|retriev)",
+      "flags": "i",
+      "class": "AI-AND-LLM.md#Indirect injection through retrieved or ingested content",
+      "cwe": [
+        "CWE-1427"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "py.eval",
+      "title": "Dynamic code evaluation",
+      "languages": [
+        "py"
+      ],
+      "pattern": "(?:^|[^.\\w])(?:eval|exec|compile)\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-95"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "py.shell",
+      "title": "Shell execution",
+      "languages": [
+        "py"
+      ],
+      "pattern": "os\\.(?:system|popen|exec\\w{0,3})\\s{0,4}\\(|subprocess\\.\\w+\\([^)]{0,300}shell\\s{0,4}=\\s{0,4}True|commands\\.getoutput",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "py.sql-format",
+      "title": "SQL built with string formatting",
+      "languages": [
+        "py"
+      ],
+      "pattern": "\\.(?:execute|executemany|raw|extra)\\s{0,4}\\(\\s{0,4}(?:f[\"']|[\"'][^\"']{0,300}[\"']\\s{0,4}(?:%|\\.format\\s{0,4}\\(|\\+))",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-89"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "py.unsafe-deserialize",
+      "title": "Unsafe deserialization",
+      "languages": [
+        "py"
+      ],
+      "pattern": "\\b(?:pickle|cPickle|dill|shelve|marshal)\\.loads?\\s{0,4}\\(|yaml\\.(?:load|unsafe_load)\\s{0,4}\\((?![^)]{0,120}SafeLoader)|torch\\.load\\s{0,4}\\((?![^)]{0,120}weights_only\\s{0,4}=\\s{0,4}True)|jsonpickle\\.decode",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-502"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "py.template-injection",
+      "title": "Template rendered from a dynamic string",
+      "languages": [
+        "py"
+      ],
+      "pattern": "render_template_string\\s{0,4}\\(|Template\\s{0,4}\\([^)]{0,80}(?:request|input|user)|Environment\\s{0,4}\\([^)]{0,200}autoescape\\s{0,4}=\\s{0,4}False|\\|\\s{0,4}safe\\b|mark_safe\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-1336"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "py.path-request",
+      "title": "Filesystem path from request input",
+      "languages": [
+        "py"
+      ],
+      "pattern": "(?:open|send_file|send_from_directory|FileResponse|os\\.path\\.join)\\s{0,4}\\([^)]{0,200}request\\.(?:args|form|values|GET|POST|files|json|query_params|path_params)",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-22"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "py.archive-extract",
+      "title": "Archive extraction without member validation",
+      "languages": [
+        "py"
+      ],
+      "pattern": "\\.extractall\\s{0,4}\\((?![^)]{0,120}filter\\s{0,4}=)|shutil\\.unpack_archive\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-22"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "py.ssrf",
+      "title": "Outbound request to request-controlled URL",
+      "languages": [
+        "py"
+      ],
+      "pattern": "(?:requests|httpx|urllib\\.request|aiohttp\\.ClientSession\\(\\))\\.(?:get|post|put|request|urlopen)\\s{0,4}\\([^)]{0,120}(?:request\\.|url|uri|callback|webhook|target)",
+      "flags": "i",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-918"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "py.tls-disabled",
+      "title": "TLS verification disabled",
+      "languages": [
+        "py"
+      ],
+      "pattern": "verify\\s{0,4}=\\s{0,4}False|ssl\\._create_unverified_context|CERT_NONE|check_hostname\\s{0,4}=\\s{0,4}False",
+      "class": "CRYPTOGRAPHY.md#Transport and certificate validation",
+      "cwe": [
+        "CWE-295"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "py.weak-random",
+      "title": "random module for a security-sensitive value",
+      "languages": [
+        "py"
+      ],
+      "pattern": "(?:token|secret|nonce|salt|password|otp|session|key)\\w{0,20}\\s{0,4}=\\s{0,4}[^\\n]{0,80}\\brandom\\.(?:random|randint|choice|choices|getrandbits|randrange)\\s{0,4}\\(",
+      "flags": "i",
+      "class": "CRYPTOGRAPHY.md#Randomness and key generation",
+      "cwe": [
+        "CWE-338"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "py.debug-enabled",
+      "title": "Debug mode enabled",
+      "languages": [
+        "py"
+      ],
+      "pattern": "\\bDEBUG\\s{0,4}=\\s{0,4}True\\b|\\.run\\s{0,4}\\([^)]{0,120}debug\\s{0,4}=\\s{0,4}True",
+      "class": "ATTACK-CLASSES.md#Obvious things",
+      "cwe": [
+        "CWE-489"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "py.csrf-exempt",
+      "title": "CSRF protection disabled",
+      "languages": [
+        "py"
+      ],
+      "pattern": "@csrf_exempt|WTF_CSRF_ENABLED\\s{0,4}=\\s{0,4}False|csrf\\s{0,4}=\\s{0,4}False",
+      "class": "WEB-PROTOCOL-AND-AUTH.md#Ordinary CSRF",
+      "cwe": [
+        "CWE-352"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "go.shell",
+      "title": "Process execution",
+      "languages": [
+        "go"
+      ],
+      "pattern": "exec\\.Command(?:Context)?\\s{0,4}\\(\\s{0,4}(?:\"(?:sh|bash|cmd|powershell)\"|[a-z]\\w{0,40}\\s{0,4}[,)])",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "go.sql-format",
+      "title": "SQL built with fmt.Sprintf or concatenation",
+      "languages": [
+        "go"
+      ],
+      "pattern": "\\.(?:Query|QueryRow|Exec|QueryContext|ExecContext|Raw)\\s{0,4}\\(\\s{0,4}(?:ctx\\s{0,4},\\s{0,4})?(?:fmt\\.Sprintf|\"[^\"]{0,300}\"\\s{0,4}\\+)",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-89"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "go.path-join",
+      "title": "filepath.Join with request input",
+      "languages": [
+        "go"
+      ],
+      "pattern": "(?:filepath|path)\\.Join\\s{0,4}\\([^)]{0,200}(?:r\\.URL|r\\.Form|Query\\(\\)|Param\\(|PathValue\\()|http\\.ServeFile\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-22"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "go.tls-skip-verify",
+      "title": "TLS verification disabled",
+      "languages": [
+        "go"
+      ],
+      "pattern": "InsecureSkipVerify\\s{0,4}:\\s{0,4}true",
+      "class": "CRYPTOGRAPHY.md#Transport and certificate validation",
+      "cwe": [
+        "CWE-295"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "go.math-rand",
+      "title": "math/rand imported (check security-sensitive use)",
+      "languages": [
+        "go"
+      ],
+      "pattern": "\"math/rand(?:/v2)?\"",
+      "class": "CRYPTOGRAPHY.md#Randomness and key generation",
+      "cwe": [
+        "CWE-338"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "go.unsafe",
+      "title": "unsafe or cgo boundary",
+      "languages": [
+        "go"
+      ],
+      "pattern": "\\bunsafe\\.Pointer\\b|^import\\s+\"C\"",
+      "class": "MEMORY-SAFETY-AND-BINARY.md#Pointer-length and ownership contract mismatch",
+      "cwe": [
+        "CWE-119"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "go.template-unescaped",
+      "title": "Unescaped template content",
+      "languages": [
+        "go"
+      ],
+      "pattern": "template\\.(?:HTML|JS|URL|HTMLAttr|CSS)\\s{0,4}\\(|\"text/template\"",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-79"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "jvm.runtime-exec",
+      "title": "Process execution",
+      "languages": [
+        "jvm"
+      ],
+      "pattern": "Runtime\\.getRuntime\\(\\)\\.exec\\s{0,4}\\(|new\\s+ProcessBuilder\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "jvm.sql-concat",
+      "title": "SQL built from concatenation",
+      "languages": [
+        "jvm"
+      ],
+      "pattern": "(?:createStatement\\(\\)\\.execute\\w{0,6}|\\.executeQuery|\\.executeUpdate|createQuery|createNativeQuery|prepareStatement)\\s{0,4}\\(\\s{0,4}\"[^\"]{0,300}\"\\s{0,4}\\+",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-89"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "jvm.deserialize",
+      "title": "Java native or polymorphic deserialization",
+      "languages": [
+        "jvm"
+      ],
+      "pattern": "new\\s+ObjectInputStream\\s{0,4}\\(|\\.readObject\\s{0,4}\\(\\s{0,4}\\)|enableDefaultTyping|activateDefaultTyping|@JsonTypeInfo\\s{0,4}\\([^)]{0,80}Id\\.CLASS|XMLDecoder|XStream\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-502"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "jvm.xxe",
+      "title": "XML parser without external-entity hardening",
+      "languages": [
+        "jvm"
+      ],
+      "pattern": "(?:DocumentBuilderFactory|SAXParserFactory|XMLInputFactory|TransformerFactory|SchemaFactory)\\.newInstance\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-611"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "jvm.expression-injection",
+      "title": "Expression language evaluation",
+      "languages": [
+        "jvm"
+      ],
+      "pattern": "SpelExpressionParser|parseExpression\\s{0,4}\\(|OgnlUtil|MVEL\\.eval|ScriptEngineManager",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-917"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "jvm.permit-all",
+      "title": "Broad permitAll or disabled CSRF",
+      "languages": [
+        "jvm"
+      ],
+      "pattern": "\\.permitAll\\s{0,4}\\(\\)|csrf\\s{0,4}\\(\\s{0,4}\\)\\s{0,4}\\.disable\\s{0,4}\\(|csrf\\s{0,4}\\(\\s{0,4}\\w+\\s{0,4}->\\s{0,4}\\w+\\.disable",
+      "class": "ATTACK-CLASSES.md#Access control",
+      "cwe": [
+        "CWE-285"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "rb.eval-shell",
+      "title": "Dynamic evaluation or shell execution",
+      "languages": [
+        "rb"
+      ],
+      "pattern": "(?:^|[^.\\w])(?:eval|instance_eval|class_eval|system|exec|spawn|IO\\.popen|Open3\\.\\w+)\\s{0,4}[(\\s]|`[^`]{0,200}#\\{|%x[({\\[]",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "rb.sql-interp",
+      "title": "SQL fragment with interpolation",
+      "languages": [
+        "rb"
+      ],
+      "pattern": "\\.(?:where|order|group|having|joins|find_by_sql|execute|select|pluck|exists\\?)\\s{0,4}\\(\\s{0,4}\"[^\"]{0,300}#\\{",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-89"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "rb.unsafe-load",
+      "title": "Unsafe deserialization",
+      "languages": [
+        "rb"
+      ],
+      "pattern": "Marshal\\.load|YAML\\.(?:load|unsafe_load)\\s{0,4}\\(|Oj\\.load\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-502"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "rb.mass-assignment",
+      "title": "Unfiltered params or html_safe",
+      "languages": [
+        "rb"
+      ],
+      "pattern": "params\\.permit!|\\.html_safe\\b|raw\\s{0,4}\\(|<%==",
+      "class": "ATTACK-CLASSES.md#Access control",
+      "cwe": [
+        "CWE-915"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "php.exec-eval",
+      "title": "Dynamic evaluation or shell execution",
+      "languages": [
+        "php"
+      ],
+      "pattern": "\\b(?:eval|assert|create_function|system|exec|shell_exec|passthru|popen|proc_open|pcntl_exec)\\s{0,4}\\(|`[^`]{0,200}\\$",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "php.include-var",
+      "title": "Dynamic include",
+      "languages": [
+        "php"
+      ],
+      "pattern": "\\b(?:include|require)(?:_once)?\\s{0,4}\\(?\\s{0,4}\\$",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-98"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "php.sql-concat",
+      "title": "SQL built from request variables",
+      "languages": [
+        "php"
+      ],
+      "pattern": "(?:mysqli?_query|->query|->exec|->prepare)\\s{0,4}\\([^)]{0,300}(?:\\$_(?:GET|POST|REQUEST|COOKIE)|\\.\\s{0,4}\\$)",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-89"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "php.unserialize",
+      "title": "unserialize on untrusted data",
+      "languages": [
+        "php"
+      ],
+      "pattern": "\\bunserialize\\s{0,4}\\(|phar://",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-502"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "php.loose-compare-auth",
+      "title": "Loose comparison on secret or hash",
+      "languages": [
+        "php"
+      ],
+      "pattern": "(?:password|hash|token|signature|hmac)\\w{0,20}\\s{0,4}==(?!=)|==(?!=)\\s{0,4}\\$\\w{0,20}(?:password|hash|token|signature|hmac)",
+      "flags": "i",
+      "class": "CRYPTOGRAPHY.md#Comparison, encoding, and timing",
+      "cwe": [
+        "CWE-697"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "cs.process-sql",
+      "title": "Process start or concatenated SQL",
+      "languages": [
+        "cs"
+      ],
+      "pattern": "Process\\.Start\\s{0,4}\\(|new\\s+SqlCommand\\s{0,4}\\(\\s{0,4}(?:\\$\"|\"[^\"]{0,300}\"\\s{0,4}\\+)|FromSqlRaw\\s{0,4}\\(\\s{0,4}\\$\"",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78",
+        "CWE-89"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "cs.deserialize",
+      "title": "Unsafe .NET deserialization",
+      "languages": [
+        "cs"
+      ],
+      "pattern": "BinaryFormatter|NetDataContractSerializer|LosFormatter|SoapFormatter|TypeNameHandling\\.(?:All|Auto|Objects)|JavaScriptSerializer\\s{0,4}\\(\\s{0,4}new\\s+SimpleTypeResolver",
+      "class": "ATTACK-CLASSES.md#Resource and file handling",
+      "cwe": [
+        "CWE-502"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "native.unsafe-copy",
+      "title": "Unbounded copy or format function",
+      "languages": [
+        "native"
+      ],
+      "pattern": "\\b(?:strcpy|strcat|sprintf|vsprintf|gets|stpcpy|wcscpy|wcscat)\\s{0,4}\\(",
+      "class": "MEMORY-SAFETY-AND-BINARY.md#Out-of-bounds read or write",
+      "cwe": [
+        "CWE-120"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "native.memcpy-length",
+      "title": "memcpy/memmove with computed length",
+      "languages": [
+        "native"
+      ],
+      "pattern": "\\bmem(?:cpy|move)\\s{0,4}\\([^;]{0,200}(?:len|size|count|n)\\s{0,4}[-+*]",
+      "class": "MEMORY-SAFETY-AND-BINARY.md#Integer overflow, underflow, truncation, and signedness",
+      "cwe": [
+        "CWE-190",
+        "CWE-787"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "native.alloc-multiply",
+      "title": "Allocation size from multiplication",
+      "languages": [
+        "native"
+      ],
+      "pattern": "\\b(?:malloc|realloc|alloca|kmalloc|vmalloc|new\\s+\\w+\\s{0,4}\\[)\\s{0,4}\\(?[^;]{0,120}\\*",
+      "class": "MEMORY-SAFETY-AND-BINARY.md#Integer overflow, underflow, truncation, and signedness",
+      "cwe": [
+        "CWE-190"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "native.format-string",
+      "title": "Non-literal format string",
+      "languages": [
+        "native"
+      ],
+      "pattern": "\\b(?:printf|fprintf|syslog|snprintf|dprintf)\\s{0,4}\\(\\s{0,4}(?:\\w+\\s{0,4},\\s{0,4})?(?:\\w+\\s{0,4},\\s{0,4})?[a-z_]\\w{0,40}\\s{0,4}\\)",
+      "class": "MEMORY-SAFETY-AND-BINARY.md#Out-of-bounds read or write",
+      "cwe": [
+        "CWE-134"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "native.system",
+      "title": "Shell execution",
+      "languages": [
+        "native"
+      ],
+      "pattern": "\\b(?:system|popen|execl|execlp|execvp|execve)\\s{0,4}\\(",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "native.user-copy",
+      "title": "Kernel user copy",
+      "languages": [
+        "native"
+      ],
+      "pattern": "\\b(?:copy_from_user|copy_to_user|get_user|put_user|__copy_from_user)\\s{0,4}\\(",
+      "class": "MEMORY-SAFETY-AND-BINARY.md#User-copy bounds and repeated reads",
+      "cwe": [
+        "CWE-367"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "rs.unsafe",
+      "title": "unsafe block or raw pointer",
+      "languages": [
+        "rs"
+      ],
+      "pattern": "\\bunsafe\\s{0,4}\\{|\\bunsafe\\s+fn\\b|from_raw_parts(?:_mut)?\\s{0,4}\\(|\\btransmute\\s{0,4}[(<:]|set_len\\s{0,4}\\(",
+      "class": "MEMORY-SAFETY-AND-BINARY.md#Use-after-free, stale view, and double free",
+      "cwe": [
+        "CWE-119"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "rs.shell",
+      "title": "Shell command",
+      "languages": [
+        "rs"
+      ],
+      "pattern": "Command::new\\s{0,4}\\(\\s{0,4}\"(?:sh|bash|cmd|powershell)\"",
+      "class": "ATTACK-CLASSES.md#Injection",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "rs.tls-danger",
+      "title": "Dangerous TLS configuration",
+      "languages": [
+        "rs"
+      ],
+      "pattern": "danger_accept_invalid_(?:certs|hostnames)\\s{0,4}\\(\\s{0,4}true|dangerous\\(\\)\\.set_certificate_verifier",
+      "class": "CRYPTOGRAPHY.md#Transport and certificate validation",
+      "cwe": [
+        "CWE-295"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "sol.tx-origin",
+      "title": "tx.origin authorization",
+      "languages": [
+        "sol"
+      ],
+      "pattern": "\\btx\\.origin\\b",
+      "class": "SMART-CONTRACTS.md#Access control and privileged roles",
+      "cwe": [
+        "CWE-477"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "sol.delegatecall",
+      "title": "delegatecall",
+      "languages": [
+        "sol"
+      ],
+      "pattern": "\\.delegatecall\\s{0,4}\\(",
+      "class": "SMART-CONTRACTS.md#Upgradeability, proxies, and storage layout",
+      "cwe": [
+        "CWE-829"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "sol.low-level-call",
+      "title": "Low-level call (reentrancy and unchecked return)",
+      "languages": [
+        "sol"
+      ],
+      "pattern": "\\.call\\s{0,4}(?:\\{[^}]{0,80}\\})?\\s{0,4}\\(|\\.send\\s{0,4}\\(",
+      "class": "SMART-CONTRACTS.md#Reentrancy and external-call ordering",
+      "cwe": [
+        "CWE-841"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "sol.selfdestruct-assembly",
+      "title": "selfdestruct or inline assembly",
+      "languages": [
+        "sol"
+      ],
+      "pattern": "\\bselfdestruct\\s{0,4}\\(|\\bassembly\\s{0,4}(?:\\(\"memory-safe\"\\)\\s{0,4})?\\{",
+      "class": "SMART-CONTRACTS.md#Upgradeability, proxies, and storage layout",
+      "cwe": [
+        "CWE-119"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "sol.weak-randomness",
+      "title": "Block values used as randomness",
+      "languages": [
+        "sol"
+      ],
+      "pattern": "(?:keccak256|sha256)\\s{0,4}\\([^;]{0,200}block\\.(?:timestamp|number|prevrandao|difficulty)|blockhash\\s{0,4}\\(",
+      "class": "SMART-CONTRACTS.md#Oracle, price, and randomness manipulation",
+      "cwe": [
+        "CWE-338"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "sol.signature",
+      "title": "Signature recovery (replay and malleability)",
+      "languages": [
+        "sol"
+      ],
+      "pattern": "\\becrecover\\s{0,4}\\(|ECDSA\\.(?:recover|tryRecover)\\s{0,4}\\(",
+      "class": "SMART-CONTRACTS.md#Signatures, permits, and replay",
+      "cwe": [
+        "CWE-347"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "sol.initializer",
+      "title": "Initializer or unprotected upgrade entry",
+      "languages": [
+        "sol"
+      ],
+      "pattern": "function\\s+(?:initialize|init|upgradeTo(?:AndCall)?|_authorizeUpgrade)\\s{0,4}\\(",
+      "class": "SMART-CONTRACTS.md#Upgradeability, proxies, and storage layout",
+      "cwe": [
+        "CWE-665"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "sh.eval-curl-pipe",
+      "title": "eval or remote script piped to a shell",
+      "languages": [
+        "sh",
+        "docker",
+        "yaml"
+      ],
+      "pattern": "\\beval\\s+[\"']?\\$|(?:curl|wget)\\s[^|\\n]{0,300}\\|\\s{0,4}(?:sudo\\s+)?(?:ba|z)?sh\\b",
+      "class": "SUPPLY-CHAIN-AND-RELEASE.md#Mutable and unbound build inputs",
+      "cwe": [
+        "CWE-494"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "gha.pull-request-target",
+      "title": "pull_request_target or workflow_run trigger",
+      "languages": [
+        "yaml"
+      ],
+      "paths": "(?:^|/)\\.github/workflows/",
+      "pattern": "^\\s{0,8}(?:-\\s{0,4})?(?:pull_request_target|workflow_run)\\s{0,4}:?\\s{0,4}$|on\\s{0,4}:\\s{0,4}\\[?[^\\]\\n]{0,80}pull_request_target",
+      "class": "SUPPLY-CHAIN-AND-RELEASE.md#Untrusted code in a privileged workflow",
+      "cwe": [
+        "CWE-829"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "gha.expression-injection",
+      "title": "Attacker-controlled expression in a run step",
+      "languages": [
+        "yaml"
+      ],
+      "paths": "(?:^|/)\\.github/workflows/|action\\.ya?ml$",
+      "pattern": "\\$\\{\\{\\s{0,4}github\\.(?:event\\.(?:issue|pull_request|comment|review|review_comment|discussion|pages|commits|head_commit|workflow_run)\\.[\\w.]{0,80}(?:title|body|name|message|ref|label|email|head_branch)|head_ref)\\s{0,4}\\}\\}",
+      "class": "SUPPLY-CHAIN-AND-RELEASE.md#Workflow command and expression confusion",
+      "cwe": [
+        "CWE-78"
+      ],
+      "severity_hint": "high"
+    },
+    {
+      "id": "gha.unpinned-action",
+      "title": "Third-party action not pinned to a commit SHA",
+      "languages": [
+        "yaml"
+      ],
+      "paths": "(?:^|/)\\.github/workflows/|action\\.ya?ml$",
+      "pattern": "uses\\s{0,4}:\\s{0,4}[\"']?(?!actions/|github/|\\./|docker://)[\\w.-]{1,100}/[\\w./-]{1,200}@(?![0-9a-f]{40}\\b)[\\w.-]{1,100}",
+      "class": "SUPPLY-CHAIN-AND-RELEASE.md#Mutable and unbound build inputs",
+      "cwe": [
+        "CWE-829"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "gha.write-all",
+      "title": "Broad workflow token permissions",
+      "languages": [
+        "yaml"
+      ],
+      "paths": "(?:^|/)\\.github/workflows/",
+      "pattern": "permissions\\s{0,4}:\\s{0,4}write-all|contents\\s{0,4}:\\s{0,4}write|id-token\\s{0,4}:\\s{0,4}write",
+      "class": "SUPPLY-CHAIN-AND-RELEASE.md#Automation identity overreach",
+      "cwe": [
+        "CWE-250"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "k8s.privileged",
+      "title": "Privileged or host-namespace workload",
+      "languages": [
+        "yaml"
+      ],
+      "pattern": "privileged\\s{0,4}:\\s{0,4}true|host(?:Network|PID|IPC)\\s{0,4}:\\s{0,4}true|allowPrivilegeEscalation\\s{0,4}:\\s{0,4}true|hostPath\\s{0,4}:",
+      "class": "CLOUD-AND-DEPLOYMENT.md#Host or control-plane capability exposure",
+      "cwe": [
+        "CWE-250"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "k8s.rbac-wildcard",
+      "title": "Wildcard RBAC",
+      "languages": [
+        "yaml"
+      ],
+      "pattern": "(?:verbs|resources|apiGroups)\\s{0,4}:\\s{0,4}\\[?\\s{0,4}[\"']\\*[\"']",
+      "class": "CLOUD-AND-DEPLOYMENT.md#Workload identity overreach",
+      "cwe": [
+        "CWE-269"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "tf.public-ingress",
+      "title": "World-open ingress or public storage",
+      "languages": [
+        "tf",
+        "yaml",
+        "config"
+      ],
+      "pattern": "0\\.0\\.0\\.0/0|::/0|acl\\s{0,4}=\\s{0,4}\"public-read(?:-write)?\"|block_public_(?:acls|policy)\\s{0,4}=\\s{0,4}false|publicly_accessible\\s{0,4}=\\s{0,4}true",
+      "class": "CLOUD-AND-DEPLOYMENT.md#Unexpected service or management-plane reachability",
+      "cwe": [
+        "CWE-284"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "tf.iam-wildcard",
+      "title": "Wildcard IAM action or principal",
+      "languages": [
+        "tf",
+        "config",
+        "yaml"
+      ],
+      "pattern": "\"?(?:Action|actions|Principal|principals)\"?\\s{0,4}[:=]\\s{0,4}\\[?\\s{0,4}\"\\*\"|\"AWS\"\\s{0,4}:\\s{0,4}\"\\*\"",
+      "class": "CLOUD-AND-DEPLOYMENT.md#Workload identity overreach",
+      "cwe": [
+        "CWE-269"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "docker.root-or-secret",
+      "title": "Container runs as root, adds secrets, or uses latest",
+      "languages": [
+        "docker"
+      ],
+      "pattern": "^\\s{0,4}USER\\s+(?:root|0)\\b|^\\s{0,4}(?:ARG|ENV)\\s+\\w{0,40}(?:PASSWORD|SECRET|TOKEN|API_KEY)\\w{0,20}[\\s=]|^\\s{0,4}FROM\\s+\\S{1,200}:latest\\b",
+      "flags": "i",
+      "class": "CLOUD-AND-DEPLOYMENT.md#Host or control-plane capability exposure",
+      "cwe": [
+        "CWE-250"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "crypto.weak-hash-cipher",
+      "title": "Weak hash or cipher mode",
+      "languages": [
+        "js",
+        "py",
+        "go",
+        "jvm",
+        "rb",
+        "php",
+        "cs",
+        "native",
+        "rs"
+      ],
+      "pattern": "\\b(?:md5|sha1|MD5|SHA1|SHA-1|RC4|DES|3DES|TripleDES|Blowfish)\\b\\s{0,4}[(.\"']|\\bECB\\b|AES/ECB|MODE_ECB|createCipher\\s{0,4}\\(",
+      "class": "CRYPTOGRAPHY.md#Primitive and mode selection",
+      "cwe": [
+        "CWE-327"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "crypto.static-iv-nonce",
+      "title": "Static or zero IV/nonce",
+      "languages": [
+        "js",
+        "py",
+        "go",
+        "jvm",
+        "rb",
+        "php",
+        "cs",
+        "native",
+        "rs"
+      ],
+      "pattern": "(?:iv|nonce|IV|Nonce)\\w{0,10}\\s{0,4}[:=]\\s{0,4}(?:b?[\"'][^\"']{8,64}[\"']|bytes\\s{0,4}\\(\\s{0,4}\\d+\\s{0,4}\\)|new\\s+byte\\s{0,4}\\[\\s{0,4}\\d+\\s{0,4}\\]|Buffer\\.alloc\\s{0,4}\\(\\s{0,4}\\d+\\s{0,4}\\)|make\\(\\[\\]byte,\\s{0,4}\\d+\\))",
+      "class": "CRYPTOGRAPHY.md#Nonce, IV, and key reuse",
+      "cwe": [
+        "CWE-329"
+      ],
+      "severity_hint": "medium"
+    },
+    {
+      "id": "crypto.non-constant-compare",
+      "title": "Secret compared with ordinary equality",
+      "languages": [
+        "js",
+        "py",
+        "go",
+        "jvm",
+        "rb",
+        "cs",
+        "rs"
+      ],
+      "pattern": "(?:signature|hmac|mac|digest|token|secret|api_?key)\\w{0,20}\\s{0,4}(?:===?|!==?|\\.equals\\s{0,4}\\(|\\.Equals\\s{0,4}\\()\\s{0,4}\\w",
+      "flags": "i",
+      "class": "CRYPTOGRAPHY.md#Comparison, encoding, and timing",
+      "cwe": [
+        "CWE-208"
+      ],
+      "severity_hint": "low"
+    },
+    {
+      "id": "crypto.password-hash",
+      "title": "Fast hash used for passwords",
+      "languages": [
+        "js",
+        "py",
+        "go",
+        "jvm",
+        "rb",
+        "php",
+        "cs"
+      ],
+      "pattern": "(?:password|passwd|pwd)\\w{0,20}[^\\n]{0,60}\\b(?:sha256|sha512|sha1|md5|createHash|hashlib\\.\\w+|MessageDigest)\\b",
+      "flags": "i",
+      "class": "CRYPTOGRAPHY.md#Password storage and key derivation",
+      "cwe": [
+        "CWE-916"
+      ],
+      "severity_hint": "medium"
+    }
+  ]
+}

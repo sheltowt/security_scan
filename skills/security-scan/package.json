@@ -1,0 +1,13 @@
+{
+  "name": "security-scan-skill",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Coding-agent security audit skill: deterministic prefilter, coverage-led hunting, adversarial validation, exploit chaining, SARIF, and verified fixes.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

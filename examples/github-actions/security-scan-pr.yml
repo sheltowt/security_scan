@@ -1,0 +1,109 @@
+# Example: run the security-scan skill in diff mode on every pull request and
+# upload the SARIF to GitHub code scanning. Copy into the TARGET repository's
+# .github/workflows/ and adapt. Read DIFF-MODE.md ("CI usage") first.
+#
+# Security properties this example keeps:
+# - `pull_request`, never `pull_request_target`: PR code never runs with write
+#   tokens. Fork PRs get no secrets, so the scan job skips them.
+# - The scan job has a read-only token. Only the upload job can write security
+#   events, and it never checks out or runs PR code.
+# - The agent gets no web tools. Its Bash access is limited to the skill's own
+#   tools and read-only git commands.
+# - Outputs are validated before upload. A validator failure fails the job.
+#
+# Residual risk: the agent reads attacker-authored PR content, which can
+# contain prompt injection. Keep the tool allowlist tight, keep the API key
+# scoped to this use, and treat the report as advisory.
+#
+# Pin third-party actions to full commit SHAs before use.
+
+name: security-scan (PR)
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out target (PR head, full history for merge-base)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          path: target
+
+      - name: Check out the skill
+        uses: actions/checkout@v4
+        with:
+          repository: sheltowt/security_scan
+          persist-credentials: false
+          path: skill
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install the skill and Claude Code
+        run: |
+          mkdir -p "$HOME/.claude/skills"
+          cp -R skill/skills/security-scan "$HOME/.claude/skills/security-scan"
+          npm install -g @anthropic-ai/claude-code
+
+      - name: Run diff-mode security review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        working-directory: target
+        run: |
+          BASE="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          OUT="$RUNNER_TEMP/security-scan"
+          mkdir -p "$OUT"
+          claude -p "Use the security-scan skill in diff mode with the quick profile. Target: $PWD. Base ref: $BASE. Head ref: $HEAD_SHA. Output directory: $OUT/run-1. Do not run Phase 7. Finish with all validators passing." \
+            --add-dir "$OUT" \
+            --allowedTools "Read" "Grep" "Glob" "Write" "Edit" "Agent" \
+              "Bash(node $HOME/.claude/skills/security-scan/*)" \
+              "Bash(bash $HOME/.claude/skills/security-scan/tools/sandbox-run.sh *)" \
+              "Bash(python3 -I $HOME/.claude/skills/security-scan/tools/promote.py *)" \
+              "Bash(git diff *)" "Bash(git log *)" "Bash(git merge-base *)" "Bash(git rev-parse *)" "Bash(git show *)" \
+            --output-format text | tee "$OUT/agent.log"
+
+      - name: Validate outputs
+        run: |
+          RUN="$RUNNER_TEMP/security-scan/run-1"
+          SKILL="$HOME/.claude/skills/security-scan"
+          node "$SKILL/validate-findings.cjs" "$RUN/findings.json"
+          node "$SKILL/validate-coverage-ledger.cjs" "$RUN/coverage-ledger.json"
+          node "$SKILL/validate-chains.cjs" "$RUN/chains.json" "$RUN/findings.json"
+          node "$SKILL/tools/to-sarif.cjs" --findings "$RUN/findings.json" --chains "$RUN/chains.json" --out "$RUN/results.sarif"
+
+      - name: Keep the report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-report
+          path: |
+            ${{ runner.temp }}/security-scan/run-1/*.md
+            ${{ runner.temp }}/security-scan/run-1/*.json
+            ${{ runner.temp }}/security-scan/run-1/results.sarif
+
+  upload:
+    needs: scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: security-scan-report
+          path: report
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report/results.sarif
+          category: security-scan

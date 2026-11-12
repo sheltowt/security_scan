@@ -1,0 +1,278 @@
+{
+  "$comment": "Contract for chains.json (Phase 3b). Each chain composes existing findings.json records; it never replaces them. validate-chains.cjs interprets this schema with the findings validator engine and adds cross-file checks.",
+  "type": "array",
+  "items": {
+    "oneOf": [
+      {
+        "type": "object",
+        "description": "A chain whose every link is confirmed and whose combined result was reproduced end to end in one bounded local fixture.",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "const": "confirmed"
+          },
+          "chain_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "starting_principal": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "links": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "fingerprint": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
+                },
+                "provides": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true,
+                  "description": "The concrete capability or state this link hands to the next link."
+                },
+                "requires": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true,
+                  "description": "The exact precondition this link consumes from the previous link (or the starting principal for the first link)."
+                }
+              },
+              "required": [
+                "fingerprint",
+                "provides",
+                "requires"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "combined_result": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "execution": {
+            "type": "object",
+            "properties": {
+              "instructions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true
+                }
+              },
+              "observed_result": {
+                "type": "string",
+                "minLength": 1,
+                "visibleContent": true
+              }
+            },
+            "required": [
+              "instructions",
+              "observed_result"
+            ],
+            "additionalProperties": false
+          },
+          "severity": {
+            "type": "object",
+            "properties": {
+              "likelihood": {
+                "type": "object",
+                "properties": {
+                  "score": {
+                    "type": "string",
+                    "enum": [
+                      "informational",
+                      "low",
+                      "medium",
+                      "high",
+                      "critical"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "visibleContent": true
+                  }
+                },
+                "required": [
+                  "score",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "impact": {
+                "type": "object",
+                "properties": {
+                  "score": {
+                    "type": "string",
+                    "enum": [
+                      "informational",
+                      "low",
+                      "medium",
+                      "high",
+                      "critical"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "visibleContent": true
+                  }
+                },
+                "required": [
+                  "score",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "overall_severity": {
+                "type": "string",
+                "enum": [
+                  "informational",
+                  "low",
+                  "medium",
+                  "high",
+                  "critical"
+                ]
+              }
+            },
+            "required": [
+              "likelihood",
+              "impact",
+              "overall_severity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "verdict",
+          "chain_id",
+          "title",
+          "description",
+          "starting_principal",
+          "links",
+          "combined_result",
+          "execution",
+          "severity"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "description": "A source-grounded composition whose end-to-end result is not yet demonstrated.",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "const": "needs_validation"
+          },
+          "chain_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "starting_principal": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "links": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "fingerprint": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
+                },
+                "provides": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true,
+                  "description": "The concrete capability or state this link hands to the next link."
+                },
+                "requires": {
+                  "type": "string",
+                  "minLength": 1,
+                  "visibleContent": true,
+                  "description": "The exact precondition this link consumes from the previous link (or the starting principal for the first link)."
+                }
+              },
+              "required": [
+                "fingerprint",
+                "provides",
+                "requires"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "claimed_result": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          },
+          "blockers": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "visibleContent": true
+            }
+          },
+          "validation_plan": {
+            "type": "string",
+            "minLength": 1,
+            "visibleContent": true
+          }
+        },
+        "required": [
+          "verdict",
+          "chain_id",
+          "title",
+          "description",
+          "starting_principal",
+          "links",
+          "claimed_result",
+          "blockers",
+          "validation_plan"
+        ],
+        "additionalProperties": false
+      }
+    ]
+  }
+}
